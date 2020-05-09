@@ -7,6 +7,9 @@ import tmdbsimple as tmdb
 
 tmdb.API_KEY = '3886f06b279c31dd0f8c4fed0837a04f'
 
+img_base_url="https://image.tmdb.org/t/p/w220_and_h330_face/"
+
+
 app = Flask(__name__)
 
 
@@ -29,9 +32,21 @@ def api_search_movie(movie_title):
     search = tmdb.Search()
     response = search.multi(query=movie_title)
     for s in search.results:
-        s["cast"] = api_search_cast(s["id"])
+        credits = api_search_cast(s["id"])
+        s["cast"] = credits["cast"]
+        s["director"] = get_director_from_crew(credits["crew"])
 
+    print(search.results[0]["director"])
+    print(person_info(search.results[0]["director"][0]["id"]))
     return response
+
+def person_info(id):
+    person = tmdb.People(id)
+    response = person.info()
+    return response
+
+def get_director_from_crew(credits):
+    return [c for c in credits if c["job"] == "Director"]
 
 
 def api_search_cast(id):
