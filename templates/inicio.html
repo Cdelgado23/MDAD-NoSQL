@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="es">  
+   <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" >
+        <title>Hobbit Feet</title>
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+    </head>
+        <body>
+             <div class="head">
+        <div class="top">
+            <div >
+                <img class="logo" src="{{ url_for('static', filename='logo.png') }}" alt="Nuestro logo">
+            </div>
+            <div class="topMenu">
+                <div class="search">
+                    <form action="BuscarRuta.do">
+                    <input type="search" placeholder="Busca" name="search">
+                    </form>
+                </div>
+                <div class="addchollo">
+                    <a href='<c:url value="/AddRuta.do"></c:url>'><button>Boton</button></a>
+                </div>
+                <c:if test="${empty sesion}"> 
+                <div class="Registro">
+                    <a href="Registro.do"><button>Boton</button></a>
+                </div>
+                </c:if>
+            </div>
+            <div class="nombrePagina">
+              <h1>MDAD lo mejor UwU</h1>
+            </div>
+        </div>
+        <div class="navegacionwarp">
+            <nav class="menu">
+            	<ul>
+            		<li><a href="index.html">Inicio</a></li>
+            		<li> <a class = "linkcat">Boton</a>
+            			<ul class="submenu">
+            				<li><a>Boton</a></li>		
+            			</ul>
+            			</li>
+            		<li> <a class = "linkshop">Boton</a>
+            			
+            			</li>
+            	</ul> 
+            </nav>
+                </div>   
+            
+       <div class="centro">
+        <div class="listachollos">
+        	{% for result in peliculas %}
+        	<div class="chollazo">
+        	<div class="chollo">
+                <div class="derechaChollo">
+                    <img class="fotochollo" src="https://image.tmdb.org/t/p/w220_and_h330_face{{result.poster_path}}" alt="Foto del chollo">
+                    <p>By: </p>
+                </div>
+                <div class="cuerpochollo">
+                    <div class="nombreChollo">
+                        <p>{{result.original_title}}</p>
+                    </div>
+                    <div class="precio">
+                        <p>Puntuación: {{result.vote_average}} </p>                                     
+                    </div>
+                    <div>
+                    <p>Votos: {{result.vote_count}}</p>
+                    </div>
+                    <div class="descripcionchollo">
+                        <p>{{result.overview}}</p>
+                    </div>
+                    <div class="piechollo">
+                        <div class="likes">
+                        	
+                        </div>
+                    </div>
+                </div>
+            </div>                 
+            </div><!-- hola -->   
+           {% endfor %}
+            </div>
+        </div>
+    </body>
+
+</html>
