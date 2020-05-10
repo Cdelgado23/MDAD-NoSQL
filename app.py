@@ -19,20 +19,41 @@ graph=None
 
 @app.route('/<searchType>/actor/<id>')
 def actor_details(searchType, id):
-    actor = {}
-    movies={}
-
-    return render_template('ActorDetail.html',actor= actor, peliculas=movies,len = 0, searchType=searchType)
+    movies=[]
+    matcher=NodeMatcher(graph)
+    actor=matcher.match("person").where("_.id="+id).first()
+    for a in  graph.run("MATCH (p:person)-[a:acts_in]->(m:movie) WHERE p.id={x} RETURN m", x=actor["id"]).data():
+        movies.append(a["m"])
+    return render_template('ActorDetail.html',actor= actor, peliculas=movies,len =len(movies), searchType=searchType)
 
 @app.route('/<searchType>/details/<id>')
 def movie_details(searchType, id):
     actors=[]
     matcher=NodeMatcher(graph)
     movie=matcher.match("movie").where("_.id="+id).first()
-    for a in  graph.run("MATCH (p:person)-[a:acts_in]->(m:movie) WHERE m.id={x} RETURN p", x=movie["id"]).data():
-        actors.append(a["p"])
-    print(actors)
-    print(movie)
+    if not movie["load"]:
+        print("no db")
+        credits = api_search_cast(movie["id"])
+        cast = credits["cast"]
+        movie["load"]=True;
+        graph.push(movie)
+        for d in cast:
+            d=person_info(d["id"])
+            if (d["profile_path"] == "None" or d["profile_path"] is None):
+                d["profile_path"]= "https://www.theprintworks.com/wp-content/themes/psBella/assets/img/film-poster-placeholder.png"
+            else:
+                d["profile_path"]= "https://image.tmdb.org/t/p/w220_and_h330_face" + d["profile_path"]              
+            actor=Node("person", name=d["name"],birthday=d["birthday"], deathdate=d["deathday"], id=d["id"], profile_path=d["profile_path"])
+            graph.merge(actor, "person", "id")
+            actors.append(actor)
+            acts_in=Relationship.type("acts_in")
+            graph.create(acts_in(actor, movie))
+    else:
+        print("in db")
+        for a in  graph.run("MATCH (p:person)-[a:acts_in]->(m:movie) WHERE m.id={x} RETURN p", x=movie["id"]).data():
+            actors.append(a["p"])
+            
+    print(movie["load"])
     return render_template('MovieDetail.html',pelicula= movie, actores=actors,len =len(actors), searchType="searchType")
 
 
@@ -99,7 +120,6 @@ def api_search_movie(movie_title):
     response = search.movie(query=movie_title)
     for s in search.results:
         credits = api_search_cast(s["id"])
-        s["cast"] = credits["cast"]
         s["director"] = get_director_from_crew(credits["crew"])
         
         
@@ -111,7 +131,7 @@ def api_search_movie(movie_title):
 
         
     for p in response["results"]:
-        movie=Node("movie", original_title=p["title"],id=p["id"], release_date=p["release_date"],poster_path=p["poster_path"], vote_count=p["vote_count"], vote_average=p["vote_average"])
+        movie=Node("movie", original_title=p["title"],id=p["id"], release_date=p["release_date"],poster_path=p["poster_path"], vote_count=p["vote_count"], vote_average=p["vote_average"], load=False)
         graph.merge(movie, "movie", "id")
 
         
@@ -126,19 +146,7 @@ def api_search_movie(movie_title):
             graph.merge(director, "person", "id")             
             directs=Relationship.type("directs")
             graph.create(directs(director, movie))
-            
                       
-                
-        for d in p["cast"]:
-            d=person_info(d["id"])
-            if (d["profile_path"] == "None" or d["profile_path"] is None):
-                d["profile_path"]= "https://www.theprintworks.com/wp-content/themes/psBella/assets/img/film-poster-placeholder.png"
-            else:
-                d["profile_path"]= "https://image.tmdb.org/t/p/w220_and_h330_face" + d["profile_path"]              
-            actor=Node("person", name=d["name"],birthday=d["birthday"], deathdate=d["deathday"], id=d["id"], profile_path=d["profile_path"])
-            graph.merge(actor, "person", "id")             
-            acts_in=Relationship.type("acts_in")
-            graph.create(acts_in(actor, movie))             
                             
 
     return response
