@@ -36,18 +36,29 @@ def search_movie(movie_title):
     else:
         result = api_search_movie(movie_title, graph)
 
+<<<<<<< HEAD
     #return render_template('inicio.html', peliculas=result["results"])
     return render_template('index.html')
+=======
+    return render_template('index.html', peliculas=result["results"], len = len(result["results"]))
+>>>>>>> 217b1a96571a13a8290021f787033fc92f76fc3c
 
 
 
 def api_search_movie(movie_title, graph):
     search = tmdb.Search()
-    response = search.multi(query=movie_title)
+    response = search.movie(query=movie_title)
     for s in search.results:
         credits = api_search_cast(s["id"])
         s["cast"] = credits["cast"]
         s["director"] = get_director_from_crew(credits["crew"])
+
+        if (s["poster_path"] == "None" or s["poster_path"] is None):
+            s["poster_path"]= "https://www.theprintworks.com/wp-content/themes/psBella/assets/img/film-poster-placeholder.png"
+        else:
+            s["poster_path"]= "https://image.tmdb.org/t/p/w220_and_h330_face" + s["poster_path"]
+            print("no none %s " %s["poster_path"])
+
         
     for p in response["results"]:
         movie=p2n.Node("movie", title=p["title"],id=p["id"], release_date=p["release_date"],poster_path=p["poster_path"], votes=p["vote_count"], rate=p["vote_average"])
@@ -80,7 +91,6 @@ def person_info(id):
 
 def get_director_from_crew(credits):
     return [c for c in credits if c["job"] == "Director"]
-
 
 
 def api_search_cast(id):
