@@ -59,13 +59,14 @@
           <div class="card mb-3 mx-auto" style="max-width: 540px; margin-top: 2%">
             <div class="row no-gutters">
               <div class="col-md-4">
-                <img src="https://image.tmdb.org/t/p/w220_and_h330_face/qmOtnpPihV3Wj6ukpiNIgzo4Ax7.jpg" class="card-img" alt="...">
+                <img src={{pelicula.poster_path}} class="card-img" alt="...">
               </div>
               <div class="col-md-8">
                 <div class="card-body">
-                  <h5 class="card-title">Card title</h5>
-                  <p class="card-text">This is a wider card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>
-                  <p class="card-text"><small class="text-muted">Last updated 3 mins ago</small></p>
+                  <h5 class="card-title">{{pelicula["original_title"]}}</h5>
+                  <p class="card-text"style = "margin-top: 20%;">Release Date: {{pelicula["release_date"]}}</p>
+                  <p class="card-text">Vote Average: {{pelicula["vote_average"]}}</p>
+                  <p class="card-text">Genre: </p>
                 </div>
               </div>
             </div>
@@ -77,16 +78,16 @@
                 {% for i in range(0, len) %}
 
                     <div class="card ">
-                        <img src="{{peliculas[i].poster_path}}" class="card-img-top" alt="No image :(">
+                        <img src="{{actores[i].profile_path}}" class="card-img-top" alt="No image :(">
                         <div class="card-body">
-                        <h5 class="card-title">{{peliculas[i].original_title}}</h5>
+                        <h5 class="card-title">{{actores[i].name}}</h5>
                         </div>
                         <ul class="list-group list-group-flush">
-                        <li class="list-group-item">Puntuación: {{peliculas[i].vote_average}} </li>
-                        <li class="list-group-item">Votos: {{peliculas[i].vote_count}}</li>
+                        <li class="list-group-item">Birthday: {{actores[i].birthday}} </li>
+                        <li class="list-group-item">Deathday: {{actores[i].deathday}}</li>
                         </ul>
                         <div class="card-body">
-                        <a href="{{peliculas[i].id}}" class="card-link ">Card link</a>
+                        <a href="{{searchType}}/actor/{{actores[i].id}}" class="card-link ">See more...</a>
                         </div>
                     </div>
 

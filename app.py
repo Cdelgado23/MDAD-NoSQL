@@ -17,6 +17,12 @@ neouser="neo4j"
 app = Flask(__name__)
 graph=None
 
+@app.route('/<searchType>/actor/<id>')
+def actor_details(searchType, id):
+    actor = {}
+    movies={}
+
+    return render_template('ActorDetail.html',actor= actor, peliculas=movies,len = 0, searchType=searchType)
 
 @app.route('/<searchType>/details/<id>')
 def movie_details(searchType, id):
@@ -27,7 +33,8 @@ def movie_details(searchType, id):
         actors.append(a["p"])
     print(actors)
     print(movie)
-    return render_template('MovieDetail.html',pelicula= movie, actores=actors,len = 0, searchType="searchType")
+    return render_template('MovieDetail.html',pelicula= movie, actores=actors,len =len(actors), searchType="searchType")
+
 
 def get_10_movies():
     matcher=NodeMatcher(graph)
@@ -45,7 +52,7 @@ def index():
 @app.route('/title', methods=['POST', 'GET'])
 def by_title_index():
     if request.method == "POST":
-        return redirect('/movie/' + request.form.get("user_input"))
+        return redirect('/title/' + request.form.get("user_input"))
     else:
         result= get_10_movies()
         return render_template('SearchPage.html',peliculas=result,len = len(result), searchType="title")
@@ -69,7 +76,7 @@ def by_genre_index():
         return render_template('SearchPage.html',peliculas=result,len = len(result), searchType="genre")
 
     
-@app.route('/movie/<movie_title>')
+@app.route('/title/<movie_title>')
 def search_movie(movie_title):
     #search in the local database
     print(movie_title)
@@ -82,20 +89,19 @@ def search_movie(movie_title):
         print("not in bd")
         result = api_search_movie(movie_title)["results"]
 
-    return render_template('SearchByTitle.html', peliculas=result, len = len(result))
+    return render_template('SearchPage.html', peliculas=result, len = len(result), searchType="title")
 
 
 
 
 def api_search_movie(movie_title):
     search = tmdb.Search()
-    matcher=NodeMatcher(graph)
     response = search.movie(query=movie_title)
     for s in search.results:
         credits = api_search_cast(s["id"])
         s["cast"] = credits["cast"]
         s["director"] = get_director_from_crew(credits["crew"])
-        s["genre"]=genres(s["genre_ids"])
+        
         
 
         if (s["poster_path"] == "None" or s["poster_path"] is None):
@@ -106,25 +112,30 @@ def api_search_movie(movie_title):
         
     for p in response["results"]:
         movie=Node("movie", original_title=p["title"],id=p["id"], release_date=p["release_date"],poster_path=p["poster_path"], vote_count=p["vote_count"], vote_average=p["vote_average"])
-        nodes.append(movie)
         graph.merge(movie, "movie", "id")
 
         
                      
         for d in p["director"]:
             d=person_info(d["id"])
-            director=Node("person", name=d["name"],birthday=d["birthday"], deathdate=d["deathday"], id=d["id"])
-            nodes.append(director)
+            if (d["profile_path"] == "None" or d["profile_path"] is None):
+                d["profile_path"]= "https://www.theprintworks.com/wp-content/themes/psBella/assets/img/film-poster-placeholder.png"
+            else:
+                d["profile_path"]= "https://image.tmdb.org/t/p/w220_and_h330_face" + d["profile_path"]            
+            director=Node("person", name=d["name"],birthday=d["birthday"], deathdate=d["deathday"], id=d["id"], profile_path=d["profile_path"])
             graph.merge(director, "person", "id")             
             directs=Relationship.type("directs")
-            relations.append(directs(director, movie))
             graph.create(directs(director, movie))
             
                       
                 
         for d in p["cast"]:
             d=person_info(d["id"])
-            actor=Node("person", name=d["name"],birthday=d["birthday"], deathdate=d["deathday"], id=d["id"])
+            if (d["profile_path"] == "None" or d["profile_path"] is None):
+                d["profile_path"]= "https://www.theprintworks.com/wp-content/themes/psBella/assets/img/film-poster-placeholder.png"
+            else:
+                d["profile_path"]= "https://image.tmdb.org/t/p/w220_and_h330_face" + d["profile_path"]              
+            actor=Node("person", name=d["name"],birthday=d["birthday"], deathdate=d["deathday"], id=d["id"], profile_path=d["profile_path"])
             graph.merge(actor, "person", "id")             
             acts_in=Relationship.type("acts_in")
             graph.create(acts_in(actor, movie))             

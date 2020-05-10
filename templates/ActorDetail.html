@@ -55,6 +55,22 @@
             </nav>
         </header>
         <main role="main">
+
+          <div class="card mb-3 mx-auto" style="max-width: 540px; margin-top: 2%">
+            <div class="row no-gutters">
+              <div class="col-md-4">
+                <img src={{actor.profile_path}} class="card-img" alt="...">
+              </div>
+              <div class="col-md-8">
+                <div class="card-body">
+                  <h5 class="card-title">{{actor["name"]}}</h5>
+                  <p class="card-text"style = "margin-top: 20%;">Birthday: {{actor["birthday"]}}</p>
+                  <p class="card-text">Deathday: {{actor["deathday"]}}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
             <div class = "container" style="margin-top:1%">
                 
                 <div class="card-columns"style = "column-count:4;  margin:0; padding: 0">
@@ -65,12 +81,12 @@
                         <div class="card-body">
                         <h5 class="card-title">{{peliculas[i].original_title}}</h5>
                         </div>
-                        <ul class="list-group list-group-flush" >
+                        <ul class="list-group list-group-flush">
                         <li class="list-group-item">Puntuación: {{peliculas[i].vote_average}} </li>
                         <li class="list-group-item">Votos: {{peliculas[i].vote_count}}</li>
                         </ul>
                         <div class="card-body">
-                        <a href="/{{searchType}}/details/{{peliculas[i].id}}" class="card-link ">See more...</a>
+                        <a href="{{searchType}}/detail/{{peliculas[i].id}}" class="card-link ">See more...</a>
                         </div>
                     </div>
 
