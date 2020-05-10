@@ -2,19 +2,16 @@ from flask import Flask, redirect, url_for, render_template, flash, request
 
 import json
 import tmdbsimple as tmdb
-<<<<<<< HEAD
 import py2neo as p2n
 
 
 tmdb.API_KEY = '3886f06b279c31dd0f8c4fed0837a04f'
-=======
 
 
 tmdb.API_KEY = '3886f06b279c31dd0f8c4fed0837a04f'
 
 img_base_url="https://image.tmdb.org/t/p/w220_and_h330_face/"
 
->>>>>>> 0f9ec43f84664d0d24d5dfe5098886cb2218fe07
 
 app = Flask(__name__)
 
@@ -31,29 +28,23 @@ def search_movie(movie_title):
     #if not in the local bd, search in the api
     result = api_search_movie(movie_title)
 
-<<<<<<< HEAD
-    return render_template('inicio.html', peliculas=result["results"])
-    #return result
+    return render_template('index.html', peliculas=result["results"], len = len(result["results"]))
 
-def api_search_movie(movie_title):
-    
-    search = tmdb.Search()
-    response = search.multi(query=movie_title)
-    for s in search.results:
-        s["cast"] = api_search_cast(s["id"])
-
-    return response
-=======
-    return " - "
 
 
 def api_search_movie(movie_title):
     search = tmdb.Search()
-    response = search.multi(query=movie_title)
+    response = search.movie(query=movie_title)
     for s in search.results:
         credits = api_search_cast(s["id"])
         s["cast"] = credits["cast"]
         s["director"] = get_director_from_crew(credits["crew"])
+
+        if (s["poster_path"] == "None" or s["poster_path"] is None):
+            s["poster_path"]= "https://www.theprintworks.com/wp-content/themes/psBella/assets/img/film-poster-placeholder.png"
+        else:
+            s["poster_path"]= "https://image.tmdb.org/t/p/w220_and_h330_face" + s["poster_path"]
+            print("no none %s " %s["poster_path"])
 
     print(search.results[0]["director"])
     print(person_info(search.results[0]["director"][0]["id"]))
@@ -66,7 +57,6 @@ def person_info(id):
 
 def get_director_from_crew(credits):
     return [c for c in credits if c["job"] == "Director"]
->>>>>>> 0f9ec43f84664d0d24d5dfe5098886cb2218fe07
 
 
 def api_search_cast(id):

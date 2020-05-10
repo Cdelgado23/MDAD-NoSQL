@@ -12,19 +12,7 @@
                 <img class="logo" src="{{ url_for('static', filename='logo.png') }}" alt="Nuestro logo">
             </div>
             <div class="topMenu">
-                <div class="search">
-                    <form action="BuscarRuta.do">
-                    <input type="search" placeholder="Busca" name="search">
-                    </form>
-                </div>
-                <div class="addchollo">
-                    <a href='<c:url value="/AddRuta.do"></c:url>'><button>Boton</button></a>
-                </div>
-                <c:if test="${empty sesion}"> 
-                <div class="Registro">
-                    <a href="Registro.do"><button>Boton</button></a>
-                </div>
-                </c:if>
+
             </div>
             <div class="nombrePagina">
               <h1>MDAD lo mejor UwU</h1>
@@ -34,14 +22,11 @@
             <nav class="menu">
             	<ul>
             		<li><a href="index.html">Inicio</a></li>
-            		<li> <a class = "linkcat">Boton</a>
-            			<ul class="submenu">
-            				<li><a>Boton</a></li>		
-            			</ul>
-            			</li>
-            		<li> <a class = "linkshop">Boton</a>
-            			
-            			</li>
+            		<li>             
+                         <form action="">
+                        <input type="search" placeholder="Busca" name="search">
+                        </form> 	
+                    </li>
             	</ul> 
             </nav>
                 </div>   
@@ -50,7 +35,8 @@
         <div class="listachollos">
         	{% for result in peliculas %}
         	<div class="chollazo">
-        	<div class="chollo">
+        	<div class="chollo"style = "  grid-column-start: 1;
+            grid-column-end: 3;">
                 <div class="derechaChollo">
                     <img class="fotochollo" src="https://image.tmdb.org/t/p/w220_and_h330_face{{result.poster_path}}" alt="Foto del chollo">
                     <p>By: </p>
