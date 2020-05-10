@@ -17,8 +17,14 @@ neouser="neo4j"
 app = Flask(__name__)
 graph=None
 
+
+@app.route('/<searchType>/details/<id>')
+def movie_details(searchType, id):
+    movie= []
+    actors=[]
+    return render_template('MovieDetail.html',pelicula= movie, actores=actors,len = 0, searchType="searchType")
+
 def get_10_movies():
-    
         matcher=NodeMatcher(graph)
         return list(matcher.match("movie").limit(10))
 
@@ -27,7 +33,7 @@ def index():
     matcher=NodeMatcher(graph)
     result=list(matcher.match("movie").limit(10))
     print(result)
-    return render_template('index.html',peliculas=result,len = len(result))
+    return render_template('SearchPage.html',peliculas=result,len = len(result), searchType="title")
     
 
 @app.route('/title', methods=['POST', 'GET'])
@@ -72,13 +78,7 @@ def search_movie(movie_title):
         result = api_search_movie(movie_title)["results"]
 
     return render_template('SearchByTitle.html', peliculas=result, len = len(result))
-
-@app.route('/movie/<movie_id>')
-def detail_movie(movie_id):
-    matcher=NodeMatcher(graph)   
-    movie=matcher.match("movie").where("_.id="+movie_id)
     
-
 
 def api_search_movie(movie_title):
     search = tmdb.Search()
