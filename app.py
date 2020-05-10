@@ -23,22 +23,25 @@ def index():
 
 @app.route('/movie/<movie_title>')
 def search_movie(movie_title):
-
-    #search in the local database
-    
-    #if not in the local bd, search in the api
-    result = api_search_movie(movie_title)
-
-    #return render_template('inicio.html', peliculas=result["results"])
-    return result
-
-
-
-def api_search_movie(movie_title):
     graph = p2n.Graph("bolt://localhost:7687", user=neouser, password=neopass)
     graph.schema.create_uniqueness_constraint("movie", "id")
-    graph.schema.create_uniqueness_constraint("person", "id")
-    graph.delete_all()#borrar en algun momento    
+    graph.schema.create_uniqueness_constraint("person", "id")    
+    #search in the local database
+    matcher = p2n.NodeMatcher(graph)
+    movies=matcher.match("movie", name__contains=movie_title)
+    if movies != None:
+        for m in movies:
+            print(m.name)
+    #if not in the local bd, search in the api
+    else:
+        result = api_search_movie(movie_title, graph)
+
+    #return render_template('inicio.html', peliculas=result["results"])
+    return render_template('index.html')
+
+
+
+def api_search_movie(movie_title, graph):
     search = tmdb.Search()
     response = search.multi(query=movie_title)
     for s in search.results:
@@ -67,9 +70,7 @@ def api_search_movie(movie_title):
             graph.merge(acts_in(actor, movie), "person", "id")             
 
                             
-                
-    print(search.results[0]["director"])
-    print(person_info(search.results[0]["director"][0]["id"]))
+
     return response
 
 def person_info(id):
