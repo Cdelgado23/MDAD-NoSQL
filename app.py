@@ -22,6 +22,7 @@ def index():
     graph = p2n.Graph("bolt://localhost:7687", user=neouser, password=neopass)
     matcher=p2n.NodeMatcher(graph)
     result=list(matcher.match("movie").limit(10))
+    print(result)
     return render_template('index.html',peliculas=result,len = len(result))
     
     
@@ -37,7 +38,12 @@ def search_movie(movie_title):
     
     return render_template('index.html', peliculas=result["results"], len = len(result["results"]))
 
-
+@app.route('/movie/<movie_id>')
+def detail_movie(movie_id):
+    graph = p2n.Graph("bolt://localhost:7687", user=neouser, password=neopass)
+    matcher=p2n.NodeMatcher(graph)   
+    movie=matcher.match("movie").where("_.id="+movie_id)
+    
 
 
 def api_search_movie(movie_title):
@@ -59,7 +65,7 @@ def api_search_movie(movie_title):
 
         
     for p in response["results"]:
-        movie=p2n.Node("movie", title=p["title"],id=p["id"], release_date=p["release_date"],poster_path=p["poster_path"], votes=p["vote_count"], rate=p["vote_average"])
+        movie=p2n.Node("movie", original_title=p["title"],id=p["id"], release_date=p["release_date"],poster_path=p["poster_path"], vote_count=p["vote_count"], vote_average=p["vote_average"])
         graph.merge(movie, "movie", "id")
         
                      
