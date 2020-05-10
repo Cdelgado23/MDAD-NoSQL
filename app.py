@@ -5,13 +5,14 @@ import tmdbsimple as tmdb
 import py2neo as p2n
 
 
-tmdb.API_KEY = '3886f06b279c31dd0f8c4fed0837a04f'
 
 
 tmdb.API_KEY = '3886f06b279c31dd0f8c4fed0837a04f'
 
 img_base_url="https://image.tmdb.org/t/p/w220_and_h330_face/"
 
+neopass="Mhwgc5P9k3mUXEj"
+neouser="neo4j"
 
 app = Flask(__name__)
 
@@ -33,6 +34,10 @@ def search_movie(movie_title):
 
 
 def api_search_movie(movie_title):
+    graph = p2n.Graph("bolt://localhost:7687", user=neouser, password=neopass)
+    graph.schema.create_uniqueness_constraint("movie", "id")
+    graph.schema.create_uniqueness_constraint("person", "id")
+    graph.delete_all()#borrar en algun momento    
     search = tmdb.Search()
     response = search.movie(query=movie_title)
     for s in search.results:
@@ -46,6 +51,29 @@ def api_search_movie(movie_title):
             s["poster_path"]= "https://image.tmdb.org/t/p/w220_and_h330_face" + s["poster_path"]
             print("no none %s " %s["poster_path"])
 
+        
+    for p in response["results"]:
+        movie=p2n.Node("movie", title=p["title"],id=p["id"], release_date=p["release_date"],poster_path=p["poster_path"], votes=p["vote_count"], rate=p["vote_average"])
+        graph.merge(movie, "movie", "id")
+        
+                     
+        for d in p["director"]:
+            d=person_info(d["id"])
+            director=p2n.Node("person", name=d["name"],birthday=d["birthday"], deathdate=d["deathday"], id=d["id"])
+            graph.merge(director, "person", "id")             
+            directs=p2n.Relationship.type("directs")
+            graph.merge(directs(director, movie), "person","id")
+                      
+                
+        for d in p["cast"]:
+            d=person_info(d["id"])
+            actor=p2n.Node("person", name=d["name"],birthday=d["birthday"], deathdate=d["deathday"], id=d["id"])
+            graph.merge(actor, "person", "id")             
+            acts_in=p2n.Relationship.type("acts_in")
+            graph.merge(acts_in(actor, movie), "person", "id")             
+
+                            
+                
     print(search.results[0]["director"])
     print(person_info(search.results[0]["director"][0]["id"]))
     return response
