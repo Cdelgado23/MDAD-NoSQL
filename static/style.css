@@ -274,33 +274,4 @@ body{
  
 
 
-{% for i in range(0, len) %}
 
-{% if i%3 == 0 %}
-<div class="row">
-{% endif %}
-
-<div class="col mb-4">
-
-    <div class="card w-75">
-        <img src="https://image.tmdb.org/t/p/w220_and_h330_face{{peliculas[i].poster_path}}" class="card-img-top" alt="No image :(">
-        <div class="card-body">
-          <h5 class="card-title">{{peliculas[i].original_title}}</h5>
-        </div>
-        <ul class="list-group list-group-flush">
-          <li class="list-group-item">Puntuación: {{peliculas[i].vote_average}} </li>
-          <li class="list-group-item">Votos: {{peliculas[i].vote_count}}</li>
-        </ul>
-        <div class="card-body">
-          <a href="#" class="card-link">Card link</a>
-          <a href="#" class="card-link">Another link</a>
-        </div>
-      </div>
-
-</div>
-
-
-{% if i%3 ==2 %}
-</div>
-{% endif %}
-{% endfor %}

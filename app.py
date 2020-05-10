@@ -38,11 +38,12 @@ def search_movie(movie_title):
     
     return render_template('index.html', peliculas=result["results"], len = len(result["results"]))
 
-@app.route('/movie/<movie_id>')
+@app.route('/<movie_id>')
 def detail_movie(movie_id):
     graph = p2n.Graph("bolt://localhost:7687", user=neouser, password=neopass)
     matcher=p2n.NodeMatcher(graph)   
     movie=matcher.match("movie").where("_.id="+movie_id)
+    return render_template('movie_detail.html')
     
 
 
@@ -66,13 +67,13 @@ def api_search_movie(movie_title):
         
     for p in response["results"]:
         movie=p2n.Node("movie", original_title=p["title"],id=p["id"], release_date=p["release_date"],poster_path=p["poster_path"], vote_count=p["vote_count"], vote_average=p["vote_average"])
-        graph.merge(movie, "movie", "id")
+        graph.create(movie)
         
                      
         for d in p["director"]:
             d=person_info(d["id"])
             director=p2n.Node("person", name=d["name"],birthday=d["birthday"], deathdate=d["deathday"], id=d["id"])
-            graph.merge(director, "person", "id")             
+            graph.create(director)             
             directs=p2n.Relationship.type("directs")
             graph.create(directs(director, movie))
                       
@@ -80,7 +81,7 @@ def api_search_movie(movie_title):
         for d in p["cast"]:
             d=person_info(d["id"])
             actor=p2n.Node("person", name=d["name"],birthday=d["birthday"], deathdate=d["deathday"], id=d["id"])
-            graph.merge(actor, "person", "id")             
+            graph.create(actor)             
             acts_in=p2n.Relationship.type("acts_in")
             graph.create(acts_in(actor, movie))             
 
