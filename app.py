@@ -17,6 +17,11 @@ neouser="neo4j"
 app = Flask(__name__)
 graph=None
 
+def get_10_movies():
+    
+        matcher=NodeMatcher(graph)
+        return list(matcher.match("movie").limit(10))
+
 @app.route('/')
 def index():
     matcher=NodeMatcher(graph)
@@ -24,6 +29,33 @@ def index():
     print(result)
     return render_template('index.html',peliculas=result,len = len(result))
     
+
+@app.route('/title', methods=['POST', 'GET'])
+def by_title_index():
+    if request.method == "POST":
+        return redirect('/movie/' + request.form.get("user_input"))
+    else:
+        result= get_10_movies()
+        return render_template('SearchPage.html',peliculas=result,len = len(result), searchType="title")
+
+
+@app.route('/director', methods=['POST', 'GET'])
+def by_director_index():
+    if request.method == "POST":
+        return redirect('/director/' + request.form.get("user_input"))
+    else:
+        result= get_10_movies()
+        return render_template('SearchPage.html',peliculas=result,len = len(result), searchType="director")
+
+
+@app.route('/genre', methods=['POST', 'GET'])
+def by_genre_index():
+    if request.method == "POST":
+        return redirect('/genre/' + request.form.get("user_input"))
+    else:
+        result= get_10_movies()
+        return render_template('SearchPage.html',peliculas=result,len = len(result), searchType="genre")
+
     
 @app.route('/movie/<movie_title>')
 def search_movie(movie_title):
@@ -39,7 +71,7 @@ def search_movie(movie_title):
         print("not in bd")
         result = api_search_movie(movie_title)["results"]
 
-    return render_template('index.html', peliculas=result, len = len(result))
+    return render_template('SearchByTitle.html', peliculas=result, len = len(result))
 
 @app.route('/movie/<movie_id>')
 def detail_movie(movie_id):

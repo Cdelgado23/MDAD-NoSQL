@@ -17,18 +17,38 @@
               </button>
               <div class="collapse navbar-collapse" id="navbarCollapse">
                 <ul class="navbar-nav mr-auto">
+                  {% if searchType =="title"%}
                   <li class="nav-item active">
-                    <a class="nav-link" href="#">Search by title <span class="sr-only">(current)</span></a>
-                  </li>
+                  {% else %}
                   <li class="nav-item">
-                    <a class="nav-link" href="#">Search by director </a>
+                  {% endif%}
+                    <a class="nav-link" href="/title">Search by title <span class="sr-only">(current)</span></a>
                   </li>
+                  {% if searchType =="director"%}
+                  <li class="nav-item active">
+                  {% else %}
                   <li class="nav-item">
-                    <a class="nav-link" href="#" tabindex="-1" aria-disabled="true">Search by genre</a>
+                  {% endif%}
+                    <a class="nav-link" href="/director">Search by director </a>
+                  </li>
+                  {% if searchType =="genre"%}
+                  <li class="nav-item active">
+                  {% else %}
+                  <li class="nav-item">
+                  {% endif%}
+                    <a class="nav-link" href="/genre" tabindex="-1" aria-disabled="true">Search by genre</a>
                   </li>
                 </ul>
-                <form class="form-inline mt-2 mt-md-0">
-                  <input class="form-control mr-sm-2" type="text" placeholder="Search" aria-label="Search">
+                {% if searchType =="title"%}
+                <form class="form-inline mt-2 mt-md-0" action = "/title" method="POST">
+                {% endif%}
+                {% if searchType =="director"%}
+                <form class="form-inline mt-2 mt-md-0" action = "/director" method="POST">
+                {% endif%}
+                {% if searchType =="genre"%}
+                <form class="form-inline mt-2 mt-md-0" action = "/genre" method="POST">
+                {% endif%}
+                  <input class="form-control mr-sm-2" type="text" placeholder="Search" aria-label="Search" name="user_input">
                   <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
                 </form>
               </div>
