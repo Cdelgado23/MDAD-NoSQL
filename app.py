@@ -17,6 +17,13 @@ neouser="neo4j"
 app = Flask(__name__)
 graph=None
 
+@app.route('/<searchType>/director/<id>')
+def director_details(searchType, id):
+    director=person_info(id)
+    movies=api_search_by_director(id)    
+
+    return render_template('ActorDetail.html',actor= director, peliculas=movies,len=len(movies), searchType=searchType) 
+
 @app.route('/<searchType>/actor/<id>')
 def actor_details(searchType, id):
     actor = {}
@@ -75,7 +82,21 @@ def by_genre_index():
         result= get_10_movies()
         return render_template('SearchPage.html',peliculas=result,len = len(result), searchType="genre")
 
+@app.route('/director/<director_name')
+def search_director(director_name):
+    print(director_name)
+    nodes = graph.run("MATCH (a:person) WHERE toLower(a.name) CONTAINS toLower({x}) RETURN a", x=director_name).data()
+    result=[]
+    for x in nodes:
+        result.append(x["a"])
     
+    #if not in the local bd, search in the api
+    if (len(result)<1):
+        result = api_search_people(director_name)["results"]
+
+    return render_template('SearchPeoplePage.html', people=result, len = len(result), searchType="director")
+
+
 @app.route('/title/<movie_title>')
 def search_movie(movie_title):
     #search in the local database
@@ -91,8 +112,36 @@ def search_movie(movie_title):
 
     return render_template('SearchPage.html', peliculas=result, len = len(result), searchType="title")
 
+def api_search_people(p_name):
+    search = tmdb.Search()
+    response = search.person(query=p_name)
+    for s in search.results:
+
+        if (s["profile_path"] == "None" or s["profile_path"] is None):
+            s["profile_path"]= "https://www.theprintworks.com/wp-content/themes/psBella/assets/img/film-poster-placeholder.png"
+        else:
+            s["profile_path"]= "https://image.tmdb.org/t/p/w220_and_h330_face" + s["profile_path"]
+
+    return response
 
 
+
+
+def api_search_by_director(director_id):
+    people = tmdb.People(director_id)
+    response = people.combined_credits()
+
+    result=[]
+
+    if ("crew" in response):
+        for d in response["crew"]:
+            if d["job"]=="Director":
+                if (d["poster_path"] == "None" or d["poster_path"] is None):
+                    d["poster_path"]= "https://www.theprintworks.com/wp-content/themes/psBella/assets/img/film-poster-placeholder.png"
+                else:
+                    d["poster_path"]= "https://image.tmdb.org/t/p/w220_and_h330_face" + d["poster_path"]  
+                result.append(d)
+    return result
 
 def api_search_movie(movie_title):
     search = tmdb.Search()
@@ -146,6 +195,10 @@ def api_search_movie(movie_title):
 def person_info(id):
     person = tmdb.People(id)
     response = person.info()
+    if (response["profile_path"] == "None" or response["profile_path"] is None):
+        response["profile_path"]= "https://www.theprintworks.com/wp-content/themes/psBella/assets/img/film-poster-placeholder.png"
+    else:
+        response["profile_path"]= "https://image.tmdb.org/t/p/w220_and_h330_face" + response["profile_path"]  
     return response
 
     
