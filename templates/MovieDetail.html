@@ -31,22 +31,12 @@
                   {% endif%}
                     <a class="nav-link" href="/director">Search by director </a>
                   </li>
-                  {% if searchType =="genre"%}
-                  <li class="nav-item active">
-                  {% else %}
-                  <li class="nav-item">
-                  {% endif%}
-                    <a class="nav-link" href="/genre" tabindex="-1" aria-disabled="true">Search by genre</a>
-                  </li>
                 </ul>
                 {% if searchType =="title"%}
                 <form class="form-inline mt-2 mt-md-0" action = "/title" method="POST">
                 {% endif%}
                 {% if searchType =="director"%}
                 <form class="form-inline mt-2 mt-md-0" action = "/director" method="POST">
-                {% endif%}
-                {% if searchType =="genre"%}
-                <form class="form-inline mt-2 mt-md-0" action = "/genre" method="POST">
                 {% endif%}
                   <input class="form-control mr-sm-2" type="text" placeholder="Search" aria-label="Search" name="user_input">
                   <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
@@ -66,7 +56,6 @@
                   <h5 class="card-title">{{pelicula["original_title"]}}</h5>
                   <p class="card-text"style = "margin-top: 20%;">Release Date: {{pelicula["release_date"]}}</p>
                   <p class="card-text">Vote Average: {{pelicula["vote_average"]}}</p>
-                  <p class="card-text">Genre: </p>
                 </div>
               </div>
             </div>
@@ -84,7 +73,7 @@
                         </div>
                         <ul class="list-group list-group-flush">
                         <li class="list-group-item">Birthday: {{actores[i].birthday}} </li>
-                        <li class="list-group-item">Deathday: {{actores[i].deathday}}</li>
+                        <li class="list-group-item">Deathday: {{actores[i].deathdate}}</li>
                         </ul>
                         <div class="card-body">
                         <a href="/{{searchType}}/actor/{{actores[i].id}}" class="card-link ">See more...</a>

@@ -42,6 +42,11 @@ def director_details(searchType, id):
 
         dir["load"]=True
         graph.push(dir)
+    
+    else:
+        matcher=NodeMatcher(graph)
+        for a in  graph.run("MATCH (p:person)-[a:directs]->(m:movie) WHERE p.id={x} RETURN m", x=dir["id"]).data():
+            movies.append(a["m"])
 
     return render_template('ActorDetail.html',actor= dir, peliculas=movies,len=len(movies), searchType=searchType) 
 
@@ -95,7 +100,7 @@ def movie_details(searchType, id):
                 d=person_info(d["id"])
                 if (d["profile_path"] == "None" or d["profile_path"] is None):
                     d["profile_path"]= "https://www.theprintworks.com/wp-content/themes/psBella/assets/img/film-poster-placeholder.png"
-
+                print(d)
                 actor=Node("person", name=d["name"],birthday=d["birthday"], deathdate=d["deathday"], id=d["id"], profile_path=d["profile_path"], load=False)
                 graph.create(actor)
 
@@ -235,7 +240,6 @@ def api_search_movie(movie_title):
         s["director"] = get_director_from_crew(credits["crew"])
         
         
-
         if (s["poster_path"] == "None" or s["poster_path"] is None):
             s["poster_path"]= "https://www.theprintworks.com/wp-content/themes/psBella/assets/img/film-poster-placeholder.png"
         else:
@@ -243,21 +247,27 @@ def api_search_movie(movie_title):
 
         
     for p in response["results"]:
-        movie=Node("movie", original_title=p["title"],id=p["id"], release_date=p["release_date"],poster_path=p["poster_path"], vote_count=p["vote_count"], vote_average=p["vote_average"], load=False)
-        graph.merge(movie, "movie", "id")
 
+        matcher=NodeMatcher(graph)
+        movie=matcher.match("movie").where("_.id="+str(p["id"])).first()
+        if (movie is None):
+            movie=Node("movie", original_title=p["title"],id=p["id"], release_date=p["release_date"],poster_path=p["poster_path"], vote_count=p["vote_count"], vote_average=p["vote_average"], load=False)
+            graph.create(movie)
         
                      
         for d in p["director"]:
-            d=person_info(d["id"])
-            if (d["profile_path"] == "None" or d["profile_path"] is None):
-                d["profile_path"]= "https://www.theprintworks.com/wp-content/themes/psBella/assets/img/film-poster-placeholder.png"
-            else:
-                d["profile_path"]= "https://image.tmdb.org/t/p/w220_and_h330_face" + d["profile_path"]            
-            director=Node("person", name=d["name"],birthday=d["birthday"], deathdate=d["deathday"], id=d["id"], profile_path=d["profile_path"],load=False)
-            graph.merge(director, "person", "id")             
+            matcher=NodeMatcher(graph)
+            dir=matcher.match("person").where("_.id="+str(d["id"])).first()
+            if (dir is None):
+                d=person_info(d["id"])
+                if (d["profile_path"] == "None" or d["profile_path"] is None):
+                    d["profile_path"]= "https://www.theprintworks.com/wp-content/themes/psBella/assets/img/film-poster-placeholder.png"
+                else:
+                    d["profile_path"]= "https://image.tmdb.org/t/p/w220_and_h330_face" + d["profile_path"]            
+                dir=Node("person", name=d["name"],birthday=d["birthday"], deathdate=d["deathday"], id=d["id"], profile_path=d["profile_path"],load=False)
+                graph.create(dir)            
             directs=Relationship.type("directs")
-            graph.create(directs(director, movie))
+            graph.create(directs(dir, movie))
                       
                             
 
