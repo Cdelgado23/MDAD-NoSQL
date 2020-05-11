@@ -16,7 +16,7 @@ neouser="neo4j"
 
 app = Flask(__name__)
 graph=None
-
+#detail of a director
 @app.route('/<searchType>/director/<id>')
 def director_details(searchType, id):
 
@@ -52,7 +52,7 @@ def director_details(searchType, id):
             movies.append(a["m"])
 
     return render_template('ActorDetail.html',actor= dir, peliculas=movies,len=len(movies), searchType=searchType) 
-
+#details of a actor
 @app.route('/<searchType>/actor/<id>')
 def actor_details(searchType, id):
     movies=[]
@@ -86,13 +86,13 @@ def actor_details(searchType, id):
         for a in  graph.run("MATCH (p:person)-[a:acts_in]->(m:movie) WHERE p.id={x} RETURN m", x=actor["id"]).data():
             movies.append(a["m"])
     return render_template('ActorDetail.html',actor= actor, peliculas=movies,len =len(movies), searchType=searchType)
-
+#detalied movie and actors and directos load
 @app.route('/<searchType>/details/<id>')
 def movie_details(searchType, id):
     actors=[]
     matcher=NodeMatcher(graph)
     movie=matcher.match("movie").where("_.id="+id).first()
-    if not movie["load"]:
+    if not movie["load"]:#check if this movie cast was loaded before
         print("no db")
         credits = api_search_cast(movie["id"])
         cast = credits["cast"]
@@ -100,11 +100,10 @@ def movie_details(searchType, id):
         directors = get_director_from_crew(credits["crew"])        
         movie["load"]=True
         graph.push(movie)
-        for d in cast:
+        for d in cast:#load actors
             matcher=NodeMatcher(graph)
             actor=matcher.match("person").where("_.id="+str(d["id"])).first()
-            if (actor==None):
-
+            if (actor==None):#check if exists in our db
                 d=person_info(d["id"])
                 if (d["profile_path"] == "None" or d["profile_path"] is None):
                     d["profile_path"]= "https://www.theprintworks.com/wp-content/themes/psBella/assets/img/film-poster-placeholder.png"
@@ -115,10 +114,10 @@ def movie_details(searchType, id):
                 acts_in=Relationship.type("acts_in")
                 graph.create(acts_in(actor, movie))
                 
-        for d in directors:
+        for d in directors:#load directors
             matcher=NodeMatcher(graph)
             dir=matcher.match("person").where("_.id="+str(d["id"])).first()
-            if (dir is None):
+            if (dir is None):#check if exists in our db
                 d=person_info(d["id"])
                 if (d["profile_path"] == "None" or d["profile_path"] is None):
                     d["profile_path"]= "https://www.theprintworks.com/wp-content/themes/psBella/assets/img/film-poster-placeholder.png"
@@ -129,7 +128,7 @@ def movie_details(searchType, id):
             directs=Relationship.type("directs")
             graph.create(directs(dir, movie))
             
-    else:
+    else:#if the cast was loaded just do a query to our db
         print("in db")
         for a in  graph.run("MATCH (p:person)-[a:acts_in]->(m:movie) WHERE m.id={x} RETURN p", x=movie["id"]).data():
             actors.append(a["p"])
@@ -172,7 +171,6 @@ def search_movie(movie_title, force_api_search=False):
         #search in the local database
         print(movie_title)
         nodes = graph.run("MATCH (a:movie) WHERE toLower(a.original_title) CONTAINS toLower({x}) RETURN a", x=movie_title).data()
-
         for x in nodes:
             result.append(x["a"])
 
@@ -228,8 +226,48 @@ def search_director(director_name, force_api_search=False):
 
     return render_template('SearchPeoplePage.html', people=result, len = len(result), searchType="director", localResult=LocalResult, currentSearch=director_name)
 
+@app.route("/genres")
+def genres_all():
+    result=[]
+    nodes=graph.run("MATCH (g:genre) RETURN g").data()
+    for x in nodes:
+        result.append(x["m"])
+    return render_template('GenresPage.html', genres=result, len = len(result), searchType="genres")
 
+@app.route('/genres/<genre_id>/complete')
+def search_director_complete(genre_id):
+    return search_genres(genre_id, True)
 
+@app.route("/genres/<genre_id>")
+def search_genres(genre_id, force_api_search=False):
+    result=[]
+    if(not force_api_search):
+        LocalResult=True
+    nodes=graph.run("MATCH (m:movie)-[b:belongs_to]->(g:genre) WHERE g.id={x} RETURN m", x=genre_id).data()
+    for x in nodes:
+        result.append(x["m"])
+    
+    else:
+        LocalResult=False
+        matcher =NodeMatcher(graph)
+        gen=matcher.match("genre").where("_.id="+str(genre_id)).first()
+        news=api_search_genres_movies(genre_id, gen["page"])
+        gen["page"]+=1
+        graph.push(gen)
+        for p in news:
+            movie=matcher.match("movie").where("_.id="+str(p["id"])).first()
+            if (movie is None):
+                movie=Node("movie", original_title=p["title"],id=p["id"], release_date=p["release_date"],poster_path=p["poster_path"], vote_count=p["vote_count"], vote_average=p["vote_average"], load=False)
+                graph.create(movie)
+                belongs_to=Relationship.type("belongs_to")
+                graph.create(belongs_to(movie, gen))
+                result.append(movie)
+        
+    return render_template('SearchPage.html', peliculas=result, len=len(result), searchType="genre", localResult=LocalResult, currentSearch=genre_id)
+def api_search_genres_movies(g_id, g_page):
+    genres=tmdb.Genres()
+    response=genres.movies(id=g_id, page=g_page)
+    return response.results
 def api_search_people(p_name):
     search = tmdb.Search()
     response = search.person(query=p_name)
@@ -281,11 +319,9 @@ def api_search_movie(movie_title):
             s["poster_path"]= "https://www.theprintworks.com/wp-content/themes/psBella/assets/img/film-poster-placeholder.png"
         else:
             s["poster_path"]= "https://image.tmdb.org/t/p/w220_and_h330_face" + s["poster_path"]
-
-        
+            
+    matcher=NodeMatcher(graph)
     for p in response["results"]:
-
-        matcher=NodeMatcher(graph)
         movie=matcher.match("movie").where("_.id="+str(p["id"])).first()
         if (movie is None):
             movie=Node("movie", original_title=p["title"],id=p["id"], release_date=p["release_date"],poster_path=p["poster_path"], vote_count=p["vote_count"], vote_average=p["vote_average"], load=False)
@@ -316,7 +352,7 @@ def api_get_genre():
     for g in response["genres"]:
         gen=matcher.match("genre").where("_.id="+str(g["id"])).first()
         if (gen is None):
-            gen=Node("genre", id=g["id"], name=g["name"])
+            gen=Node("genre", id=g["id"], name=g["name"], page=1)
             graph.create(gen)
     
     
