@@ -263,7 +263,7 @@ def search_genres(genre_id, force_api_search=False):
         news=api_search_genres_movies(genre_id, gen["page"])
         gen["page"]+=1
         graph.push(gen)
-        for p in news:
+        for p in news["results"]:
             movie=matcher.match("movie").where("_.id="+str(p["id"])).first()
             if (movie is None):
                 if (p["poster_path"] == "None" or p["poster_path"] is None):
@@ -281,8 +281,7 @@ def search_genres(genre_id, force_api_search=False):
 def api_search_genres_movies(g_id, g_page):
     genres=tmdb.Genres(g_id)
     response=genres.movies(page=g_page)
-    return response["results"]
-
+    return response
 def api_search_people(p_name):
     search = tmdb.Search()
     response = search.person(query=p_name)
