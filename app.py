@@ -96,10 +96,11 @@ def movie_details(searchType, id):
         print("no db")
         credits = api_search_cast(movie["id"])
         cast = credits["cast"]
+        credits = api_search_cast(movie["id"])
+        directors = get_director_from_crew(credits["crew"])        
         movie["load"]=True
         graph.push(movie)
         for d in cast:
-
             matcher=NodeMatcher(graph)
             actor=matcher.match("person").where("_.id="+str(d["id"])).first()
             if (actor==None):
@@ -110,10 +111,24 @@ def movie_details(searchType, id):
                 print(d)
                 actor=Node("person", name=d["name"],birthday=d["birthday"], deathdate=d["deathday"], id=d["id"], profile_path=d["profile_path"], load=False)
                 graph.create(actor)
-
-            actors.append(actor)
-            acts_in=Relationship.type("acts_in")
-            graph.create(acts_in(actor, movie))
+                actors.append(actor)
+                acts_in=Relationship.type("acts_in")
+                graph.create(acts_in(actor, movie))
+                
+        for d in directors:
+            matcher=NodeMatcher(graph)
+            dir=matcher.match("person").where("_.id="+str(d["id"])).first()
+            if (dir is None):
+                d=person_info(d["id"])
+                if (d["profile_path"] == "None" or d["profile_path"] is None):
+                    d["profile_path"]= "https://www.theprintworks.com/wp-content/themes/psBella/assets/img/film-poster-placeholder.png"
+                else:
+                    d["profile_path"]= "https://image.tmdb.org/t/p/w220_and_h330_face" + d["profile_path"]            
+                dir=Node("person", name=d["name"],birthday=d["birthday"], deathdate=d["deathday"], id=d["id"], profile_path=d["profile_path"],load=False)
+                graph.create(dir)            
+            directs=Relationship.type("directs")
+            graph.create(directs(dir, movie))
+            
     else:
         print("in db")
         for a in  graph.run("MATCH (p:person)-[a:acts_in]->(m:movie) WHERE m.id={x} RETURN p", x=movie["id"]).data():
@@ -262,10 +277,6 @@ def api_search_movie(movie_title):
     search = tmdb.Search()
     response = search.movie(query=movie_title)
     for s in search.results:
-        credits = api_search_cast(s["id"])
-        s["director"] = get_director_from_crew(credits["crew"])
-        
-        
         if (s["poster_path"] == "None" or s["poster_path"] is None):
             s["poster_path"]= "https://www.theprintworks.com/wp-content/themes/psBella/assets/img/film-poster-placeholder.png"
         else:
@@ -278,27 +289,8 @@ def api_search_movie(movie_title):
         movie=matcher.match("movie").where("_.id="+str(p["id"])).first()
         if (movie is None):
             movie=Node("movie", original_title=p["title"],id=p["id"], release_date=p["release_date"],poster_path=p["poster_path"], vote_count=p["vote_count"], vote_average=p["vote_average"], load=False)
-            graph.create(movie)
-        
-        
-        
-                     
-        for d in p["director"]:
-            matcher=NodeMatcher(graph)
-            dir=matcher.match("person").where("_.id="+str(d["id"])).first()
-            if (dir is None):
-                d=person_info(d["id"])
-                if (d["profile_path"] == "None" or d["profile_path"] is None):
-                    d["profile_path"]= "https://www.theprintworks.com/wp-content/themes/psBella/assets/img/film-poster-placeholder.png"
-                else:
-                    d["profile_path"]= "https://image.tmdb.org/t/p/w220_and_h330_face" + d["profile_path"]            
-                dir=Node("person", name=d["name"],birthday=d["birthday"], deathdate=d["deathday"], id=d["id"], profile_path=d["profile_path"],load=False)
-                graph.create(dir)            
-            directs=Relationship.type("directs")
-            graph.create(directs(dir, movie))
-                      
-                            
-
+            graph.create(movie) 
+            
     return response
 
 def person_info(id):
