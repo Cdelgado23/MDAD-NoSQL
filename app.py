@@ -248,16 +248,18 @@ def search_genres_complete(genre_id):
 @app.route("/genres/<genre_id>")
 def search_genres(genre_id, force_api_search=False):
     result=[]
-    if(not force_api_search):
-        LocalResult=True
-    nodes=graph.run("MATCH (m:movie)-[b:belongs_to]->(g:genre) WHERE g.id={x} RETURN m", x=genre_id).data()
+    print(genre_id)
+    query = "MATCH (m:movie)-[b:belongs_to]->(g:genre) WHERE g.id=" + str(genre_id)+" RETURN m"
+    nodes=graph.run(query).data()
+    print(nodes)
+    matcher =NodeMatcher(graph)
+    gen=matcher.match("genre").where("_.id="+str(genre_id)).first()
     for x in nodes:
         result.append(x["m"])
-    
+    if(not force_api_search):
+        LocalResult=True
     else:
         LocalResult=False
-        matcher =NodeMatcher(graph)
-        gen=matcher.match("genre").where("_.id="+str(genre_id)).first()
         news=api_search_genres_movies(genre_id, gen["page"])
         gen["page"]+=1
         graph.push(gen)
