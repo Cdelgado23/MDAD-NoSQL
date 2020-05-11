@@ -137,20 +137,30 @@ def by_title_index():
         result= get_10_movies()
         return render_template('SearchPage.html',peliculas=result,len = len(result), searchType="title")
 
+#Called from the complete search card in movie search
+@app.route('/title/<movie_title>/complete')
+def search_movie_complete(movie_title):
+    return search_movie(movie_title, True)
+
 @app.route('/title/<movie_title>')
-def search_movie(movie_title):
-    #search in the local database
-    print(movie_title)
-    nodes = graph.run("MATCH (a:movie) WHERE toLower(a.original_title) CONTAINS toLower({x}) RETURN a", x=movie_title).data()
+def search_movie(movie_title, force_api_search=False):
     result=[]
-    for x in nodes:
-        result.append(x["a"])
+    if (not force_api_search):
+        LocalResult=True
+        #search in the local database
+        print(movie_title)
+        nodes = graph.run("MATCH (a:movie) WHERE toLower(a.original_title) CONTAINS toLower({x}) RETURN a", x=movie_title).data()
+
+        for x in nodes:
+            result.append(x["a"])
+
     #if not in the local bd, search in the api
     if (len(result)<1):
+        LocalResult=False
         print("not in bd")
         result = api_search_movie(movie_title)["results"]
 
-    return render_template('SearchPage.html', peliculas=result, len = len(result), searchType="title")
+    return render_template('SearchPage.html', peliculas=result, len = len(result), searchType="title", localResult=LocalResult, currentSearch=movie_title)
 
 
 
@@ -162,16 +172,25 @@ def by_director_index():
         result= get_10_movies()
         return render_template('SearchPage.html',peliculas=result,len = len(result), searchType="director")
 
+
+#Called from the complete search card in director search
+@app.route('/director/<director_name>/complete')
+def search_director_complete(director_name):
+    return search_director(director_name, True)
+
 @app.route('/director/<director_name>')
-def search_director(director_name):
+def search_director(director_name, force_api_search=False):
     print(director_name)
-    nodes = graph.run("MATCH (a:person) WHERE toLower(a.name) CONTAINS toLower({x}) RETURN a", x=director_name).data()
     result=[]
-    for x in nodes:
-        result.append(x["a"])
-    
+    if (not force_api_search):
+        LocalResult=True
+        nodes = graph.run("MATCH (a:person) WHERE toLower(a.name) CONTAINS toLower({x}) RETURN a", x=director_name).data()
+        for x in nodes:
+            result.append(x["a"])
+        
     #if not in the local bd, search in the api
     if (len(result)<1):
+        LocalResult=False
         people = api_search_people(director_name)["results"]
         for d in people:
             print("DIRS")
@@ -185,7 +204,7 @@ def search_director(director_name):
 
             result.append(dir)
 
-    return render_template('SearchPeoplePage.html', people=result, len = len(result), searchType="director")
+    return render_template('SearchPeoplePage.html', people=result, len = len(result), searchType="director", localResult=LocalResult, currentSearch=director_name)
 
 
 
