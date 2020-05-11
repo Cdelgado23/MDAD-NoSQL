@@ -260,8 +260,8 @@ def search_genres(genre_id, force_api_search=False):
         LocalResult=True
     else:
         LocalResult=False
-        news=api_search_genres_movies(genre_id, gen["page"])
         gen["page"]+=1
+        news=api_search_genres_movies(genre_id, gen["page"])
         graph.push(gen)
         for p in news["results"]:
             movie=matcher.match("movie").where("_.id="+str(p["id"])).first()
@@ -373,7 +373,7 @@ def api_get_genre():
     for g in response["genres"]:
         gen=matcher.match("genre").where("_.id="+str(g["id"])).first()
         if (gen is None):
-            gen=Node("genre", id=g["id"], name=g["name"], page=1)
+            gen=Node("genre", id=g["id"], name=g["name"], page=0)
             graph.create(gen)
     
     

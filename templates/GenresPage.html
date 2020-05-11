@@ -47,12 +47,10 @@
                 <div class="card-columns"style = "column-count:4;  margin:0; padding: 0">
                 {% for i in range(0, len) %}
 
-                    <div class="card ">
-                        <div class="card-body">
-                        <h5 class="card-title">{{genres[i].name}}</h5>
-                        </div>
-                        <div class="card-body">
-                        <a href="/genres/{{genres[i].id}}" class="card-link ">See movies...</a>
+                    <div class="card bg-light">
+                        <div class="card-body text-center">
+                        <h5 class="card-title text-dark">{{genres[i].name}}</h5>
+                        <a href="/genres/{{genres[i].id}}" class="card-link">See movies...</a>
                         </div>
                     </div>
 
