@@ -90,6 +90,7 @@ def actor_details(searchType, id):
 @app.route('/<searchType>/details/<id>')
 def movie_details(searchType, id):
     actors=[]
+    genres=[]
     matcher=NodeMatcher(graph)
     movie=matcher.match("movie").where("_.id="+id).first()
     if not movie["load"]:#check if this movie cast was loaded before
@@ -126,14 +127,20 @@ def movie_details(searchType, id):
                 dir=Node("person", name=d["name"],birthday=d["birthday"], deathdate=d["deathday"], id=d["id"], profile_path=d["profile_path"],load=False)
                 graph.create(dir)            
             directs=Relationship.type("directs")
-            graph.create(directs(dir, movie))
+            graph.create(directs(dir, movie)) 
             
     else:#if the cast was loaded just do a query to our db
         print("in db")
         for a in  graph.run("MATCH (p:person)-[a:acts_in]->(m:movie) WHERE m.id={x} RETURN p", x=movie["id"]).data():
             actors.append(a["p"])
-            
-    print(movie["load"])
+
+    genres = list(graph.run("MATCH (m:movie)-[b:belongs_to]->(g:genre) WHERE m.id={x} RETURN g", x= movie["id"]).data())
+    movie["genres_names"]=[]
+    for g in genres:
+        movie["genres_names"].append(g["g"])
+    print(movie["genres_names"])
+
+
     return render_template('MovieDetail.html',pelicula= movie, actores=actors,len =len(actors), searchType=searchType)
 
 
@@ -326,6 +333,11 @@ def api_search_movie(movie_title):
         if (movie is None):
             movie=Node("movie", original_title=p["title"],id=p["id"], release_date=p["release_date"],poster_path=p["poster_path"], vote_count=p["vote_count"], vote_average=p["vote_average"], load=False)
             graph.create(movie) 
+            for g in p["genre_ids"]:
+                genre=matcher.match("genre").where("_.id="+str(g)).first()
+                belongs_to=Relationship.type("belongs_to")
+                graph.create(belongs_to(movie, genre))  
+        
             
     return response
 

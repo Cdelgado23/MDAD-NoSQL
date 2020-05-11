@@ -31,7 +31,14 @@
                   {% endif%}
                     <a class="nav-link" href="/director">Search by director </a>
                   </li>
+                  {% if searchType =="genre"%}
+                  <li class="nav-item active">
+                  {% else %}
+                  <li class="nav-item">
+                  {% endif%}
+                  <a class="nav-link" href="/genres">Search by genre </a>
                 </ul>
+                {%if searchType != "genre"%}
                 {% if searchType =="title"%}
                 <form class="form-inline mt-2 mt-md-0" action = "/title" method="POST">
                 {% endif%}
@@ -41,6 +48,7 @@
                   <input class="form-control mr-sm-2" type="text" placeholder="Search" aria-label="Search" name="user_input">
                   <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
                 </form>
+                {%endif%}
               </div>
             </nav>
         </header>
@@ -56,6 +64,11 @@
                   <h5 class="card-title">{{pelicula["original_title"]}}</h5>
                   <p class="card-text"style = "margin-top: 20%;">Release Date: {{pelicula["release_date"]}}</p>
                   <p class="card-text">Vote Average: {{pelicula["vote_average"]}}</p>
+                  <div class="row">
+                    {% for g in pelicula["genres_names"]%}
+                    <div class="col-sm bg-primary text-center" style="margin-left: 2%; margin-top:1px; border-radius: 5px;">{{g["name"]}}</div>
+                    {% endfor%}
+                  </div>
                 </div>
               </div>
             </div>

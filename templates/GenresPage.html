@@ -30,25 +30,14 @@
                   <li class="nav-item">
                   {% endif%}
                     <a class="nav-link" href="/director">Search by director </a>
-                  </li>
                   {% if searchType =="genre"%}
                   <li class="nav-item active">
                   {% else %}
                   <li class="nav-item">
                   {% endif%}
-                  <a class="nav-link" href="/genres">Search by genre </a>
+                    <a class="nav-link" href="/genres">Search by genre </a>
+                  </li>
                 </ul>
-                {%if searchType != "genre"%}
-                {% if searchType =="title"%}
-                <form class="form-inline mt-2 mt-md-0" action = "/title" method="POST">
-                {% endif%}
-                {% if searchType =="director"%}
-                <form class="form-inline mt-2 mt-md-0" action = "/director" method="POST">
-                {% endif%}
-                  <input class="form-control mr-sm-2" type="text" placeholder="Search" aria-label="Search" name="user_input">
-                  <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
-                </form>
-                {%endif%}
               </div>
             </nav>
         </header>
@@ -59,36 +48,16 @@
                 {% for i in range(0, len) %}
 
                     <div class="card ">
-                        <img src="{{people[i].profile_path}}" class="card-img-top" alt="No image :(">
+                        <img src="{{peliculas[i].poster_path}}" class="card-img-top" alt="No image :(">
                         <div class="card-body">
-                        <h5 class="card-title">{{people[i].name}}</h5>
+                        <h5 class="card-title">{{genres[i].name}}</h5>
                         </div>
-                        <ul class="list-group list-group-flush" >
-                        <li class="list-group-item">Birthday: {{people[i].birthday}} </li>
-                        <li class="list-group-item">Deathday: {{people[i].deathdate}}</li>
-                        </ul>
                         <div class="card-body">
-                        <a href="/{{searchType}}/director/{{people[i].id}}" class="card-link ">See more...</a>
+                        <a href="/genre/{{genres[i].name}}" class="card-link ">See movies...</a>
                         </div>
                     </div>
 
                 {% endfor %}
-
-                {% if localResult%}
-                    <div class="card ">
-                      <img src="https://img.icons8.com/cotton/2x/search--v1.png" class="card-img-top" alt="No image :(">
-                      <div class="card-body">
-                      <h5 class="card-title">Complete Search</h5>
-                      </div>
-                      <ul class="list-group list-group-flush" >
-                      <li class="list-group-item">Not the result you are looking for? Complete the result clicking here!</li>
-                      </ul>
-                      <div class="card-body">
-                      <a href="/director/{{currentSearch}}/complete" class="card-link ">See more...</a>
-                      </div>
-                  </div>
-                {% endif%}
-
                 </div>
             </div>
         </main>     
