@@ -167,8 +167,8 @@ def search_director(director_name):
     
     #if not in the local bd, search in the api
     if (len(result)<1):
-        result = api_search_people(director_name)["results"]
-        for d in result:
+        people = api_search_people(director_name)["results"]
+        for d in people:
             print("DIRS")
             print(d)
             matcher=NodeMatcher(graph)
@@ -254,7 +254,7 @@ def api_search_movie(movie_title):
                 d["profile_path"]= "https://www.theprintworks.com/wp-content/themes/psBella/assets/img/film-poster-placeholder.png"
             else:
                 d["profile_path"]= "https://image.tmdb.org/t/p/w220_and_h330_face" + d["profile_path"]            
-            director=Node("person", name=d["name"],birthday=d["birthday"], deathdate=d["deathday"], id=d["id"], profile_path=d["profile_path"])
+            director=Node("person", name=d["name"],birthday=d["birthday"], deathdate=d["deathday"], id=d["id"], profile_path=d["profile_path"],load=False)
             graph.merge(director, "person", "id")             
             directs=Relationship.type("directs")
             graph.create(directs(director, movie))
