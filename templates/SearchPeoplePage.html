@@ -65,6 +65,22 @@
                     </div>
 
                 {% endfor %}
+
+                {% if localResult%}
+                    <div class="card ">
+                      <img src="https://img.icons8.com/cotton/2x/search--v1.png" class="card-img-top" alt="No image :(">
+                      <div class="card-body">
+                      <h5 class="card-title">Complete Search</h5>
+                      </div>
+                      <ul class="list-group list-group-flush" >
+                      <li class="list-group-item">Not the result you are looking for? Complete the result clicking here!</li>
+                      </ul>
+                      <div class="card-body">
+                      <a href="/director/{{currentSearch}}/complete" class="card-link ">See more...</a>
+                      </div>
+                  </div>
+                {% endif%}
+
                 </div>
             </div>
         </main>     
