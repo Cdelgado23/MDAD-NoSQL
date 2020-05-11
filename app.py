@@ -239,7 +239,7 @@ def genres_all():
     nodes=graph.run("MATCH (g:genre) RETURN g").data()
     for x in nodes:
         result.append(x["g"])
-    return render_template('GenresPage.html', genres=result, len = len(result), searchType="genres")
+    return render_template('GenresPage.html', genres=result, len = len(result), searchType="genre")
 
 @app.route('/genres/<genre_id>/complete')
 def search_genres_complete(genre_id):
