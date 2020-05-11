@@ -238,11 +238,11 @@ def genres_all():
     result=[]
     nodes=graph.run("MATCH (g:genre) RETURN g").data()
     for x in nodes:
-        result.append(x["m"])
+        result.append(x["g"])
     return render_template('GenresPage.html', genres=result, len = len(result), searchType="genres")
 
 @app.route('/genres/<genre_id>/complete')
-def search_director_complete(genre_id):
+def search_genres_complete(genre_id):
     return search_genres(genre_id, True)
 
 @app.route("/genres/<genre_id>")
@@ -264,17 +264,21 @@ def search_genres(genre_id, force_api_search=False):
         for p in news:
             movie=matcher.match("movie").where("_.id="+str(p["id"])).first()
             if (movie is None):
+                if (p["poster_path"] == "None" or p["poster_path"] is None):
+                    p["poster_path"]= "https://www.theprintworks.com/wp-content/themes/psBella/assets/img/film-poster-placeholder.png"
+                else:
+                    p["poster_path"]= "https://image.tmdb.org/t/p/w220_and_h330_face" + p["poster_path"]                
                 movie=Node("movie", original_title=p["title"],id=p["id"], release_date=p["release_date"],poster_path=p["poster_path"], vote_count=p["vote_count"], vote_average=p["vote_average"], load=False)
                 graph.create(movie)
                 belongs_to=Relationship.type("belongs_to")
                 graph.create(belongs_to(movie, gen))
                 result.append(movie)
         
-    return render_template('SearchPage.html', peliculas=result, len=len(result), searchType="genre", localResult=LocalResult, currentSearch=genre_id)
+    return render_template('GenreDetail.html', peliculas=result, len=len(result), searchType="genre", localResult=LocalResult, currentSearch=genre_id)
 def api_search_genres_movies(g_id, g_page):
-    genres=tmdb.Genres()
-    response=genres.movies(id=g_id, page=g_page)
-    return response.results
+    genres=tmdb.Genres(g_id)
+    response=genres.movies(page=g_page)
+    return response["results"]
 def api_search_people(p_name):
     search = tmdb.Search()
     response = search.person(query=p_name)

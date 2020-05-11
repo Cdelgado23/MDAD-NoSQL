@@ -48,12 +48,12 @@
                 {% for i in range(0, len) %}
 
                     <div class="card ">
-                        <img src="{{peliculas[i].poster_path}}" class="card-img-top" alt="No image :(">
+
                         <div class="card-body">
                         <h5 class="card-title">{{genres[i].name}}</h5>
                         </div>
                         <div class="card-body">
-                        <a href="/genre/{{genres[i].name}}" class="card-link ">See movies...</a>
+                        <a href="/genres/{{genres[i].id}}" class="card-link ">See movies...</a>
                         </div>
                     </div>
 
