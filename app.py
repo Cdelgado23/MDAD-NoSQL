@@ -238,11 +238,11 @@ def genres_all():
     result=[]
     nodes=graph.run("MATCH (g:genre) RETURN g").data()
     for x in nodes:
-        result.append(x["m"])
+        result.append(x["g"])
     return render_template('GenresPage.html', genres=result, len = len(result), searchType="genres")
 
 @app.route('/genres/<genre_id>/complete')
-def search_director_complete(genre_id):
+def search_genres_complete(genre_id):
     return search_genres(genre_id, True)
 
 @app.route("/genres/<genre_id>")
@@ -270,11 +270,12 @@ def search_genres(genre_id, force_api_search=False):
                 graph.create(belongs_to(movie, gen))
                 result.append(movie)
         
-    return render_template('SearchPage.html', peliculas=result, len=len(result), searchType="genre", localResult=LocalResult, currentSearch=genre_id)
+    return render_template('GenreDetail.html', peliculas=result, len=len(result), searchType="genre", localResult=LocalResult, currentSearch=gen)
 def api_search_genres_movies(g_id, g_page):
-    genres=tmdb.Genres()
-    response=genres.movies(id=g_id, page=g_page)
-    return response.results
+    genres=tmdb.Genres(g_id)
+    response=genres.movies(page=g_page)
+    return response["results"]
+
 def api_search_people(p_name):
     search = tmdb.Search()
     response = search.person(query=p_name)
@@ -357,6 +358,7 @@ def api_search_cast(id):
     movie = tmdb.Movies(id)
     response = movie.credits()
     return response
+
 def api_get_genre():
     genres=tmdb.Genres()
     response=genres.movie_list()

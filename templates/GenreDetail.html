@@ -60,8 +60,8 @@
               </div>
               <div class="col-md-8">
                 <div class="card-body">
-                  <h5 class="card-title">{{genre["name"]}}</h5>
-                  <p class="card-text"style = "margin-top: 20%;">Loaded Pages: {{genre["pages"]}}</p>
+                  <h5 class="card-title">{{currentSearch["name"]}}</h5>
+                  <p class="card-text"style = "margin-top: 20%;">Loaded Pages: {{currentSearch["page"]}}</p>
                 </div>
               </div>
             </div>
@@ -97,7 +97,7 @@
                     <li class="list-group-item">Not the result you are looking for? load another page clicking here!</li>
                     </ul>
                     <div class="card-body">
-                    <a href='/genre/{{genre["name"]}}/complete' class="card-link ">See more...</a>
+                    <a href='/genre/{{currentSearch["id"]}}/complete' class="card-link ">See more...</a>
                     </div>
                   </div>
                 </div>
