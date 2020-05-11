@@ -26,9 +26,8 @@ def director_details(searchType, id):
 
     if (not dir["load"]):
         movies=api_search_by_director(id) 
-
+        matcher=NodeMatcher(graph)
         for p in movies: 
-            matcher=NodeMatcher(graph)
             movie=matcher.match("movie").where("_.id="+str(p["id"])).first()
 
             if (movie==None):
@@ -36,6 +35,10 @@ def director_details(searchType, id):
                 response = mov.info()
                 movie=Node("movie", original_title=response["original_title"],id=p["id"], release_date=response["release_date"],poster_path=p["poster_path"], vote_count=p["vote_count"], vote_average=p["vote_average"], load=False)
                 graph.create(movie)
+            for g in p["genre_ids"]:
+                genre=matcher.match("genre").where("_.id="+str(g)).first()
+                belongs_to=Relationship.type("belongs_to")
+                graph.create(belongs_to(movie, genre))         
 
             directs=Relationship.type("directs")
             graph.create(directs(dir, movie))
@@ -68,6 +71,10 @@ def actor_details(searchType, id):
                 response = mov.info()
                 movie=Node("movie", original_title=response["original_title"],id=p["id"], release_date=response["release_date"],poster_path=p["poster_path"], vote_count=p["vote_count"], vote_average=p["vote_average"], load=False)
                 graph.create(movie)
+            for g in p["genre_ids"]:
+                genre=matcher.match("genre").where("_.id="+str(g)).first()
+                belongs_to=Relationship.type("belongs_to")
+                graph.create(belongs_to(movie, genre))            
 
             acts_in=Relationship.type("acts_in")
             graph.create(acts_in(actor, movie))
@@ -273,6 +280,8 @@ def api_search_movie(movie_title):
             movie=Node("movie", original_title=p["title"],id=p["id"], release_date=p["release_date"],poster_path=p["poster_path"], vote_count=p["vote_count"], vote_average=p["vote_average"], load=False)
             graph.create(movie)
         
+        
+        
                      
         for d in p["director"]:
             matcher=NodeMatcher(graph)
@@ -308,13 +317,20 @@ def api_search_cast(id):
     movie = tmdb.Movies(id)
     response = movie.credits()
     return response
+def api_get_genre():
+    genres=tmdb.Genres()
+    response=genres.movie_list()
+    matcher=NodeMatcher(graph) 
+    for g in response["genres"]:
+        gen=matcher.match("genre").where("_.id="+str(g["id"])).first()
+        if (gen is None):
+            gen=Node("genre", id=g["id"], name=g["name"])
+            graph.create(gen)
     
-def genres(genre_id):
-    genre=tmdb.Genres()
-    respones=genre.movie_list()
     
 
 
 if __name__ == '__main__':
     graph = Graph("bolt://localhost:7687", user=neouser, password=neopass)
+    api_get_genre()
     app.run(debug=True)
