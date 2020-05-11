@@ -72,8 +72,9 @@
                         <h5 class="card-title">{{peliculas[i].original_title}}</h5>
                         </div>
                         <ul class="list-group list-group-flush">
-                        <li class="list-group-item">Puntuación: {{peliculas[i].vote_average}} </li>
-                        <li class="list-group-item">Votos: {{peliculas[i].vote_count}}</li>
+                        <li class="list-group-item">Release Date: {{peliculas[i].release_date}} </li>
+                        <li class="list-group-item">Vote Average: {{peliculas[i].vote_average}} </li>
+                        <li class="list-group-item">votes: {{peliculas[i].vote_count}}</li>
                         </ul>
                         <div class="card-body">
                         <a href="/{{searchType}}/details/{{peliculas[i].id}}" class="card-link ">See more...</a>
