@@ -266,6 +266,10 @@ def search_genres(genre_id, force_api_search=False):
         for p in news:
             movie=matcher.match("movie").where("_.id="+str(p["id"])).first()
             if (movie is None):
+                if (p["poster_path"] == "None" or p["poster_path"] is None):
+                    p["poster_path"]= "https://www.theprintworks.com/wp-content/themes/psBella/assets/img/film-poster-placeholder.png"
+                else:
+                    p["poster_path"]= "https://image.tmdb.org/t/p/w220_and_h330_face" + p["poster_path"]                
                 movie=Node("movie", original_title=p["title"],id=p["id"], release_date=p["release_date"],poster_path=p["poster_path"], vote_count=p["vote_count"], vote_average=p["vote_average"], load=False)
                 graph.create(movie)
                 belongs_to=Relationship.type("belongs_to")
@@ -273,6 +277,7 @@ def search_genres(genre_id, force_api_search=False):
                 result.append(movie)
         
     return render_template('GenreDetail.html', peliculas=result, len=len(result), searchType="genre", localResult=LocalResult, currentSearch=gen)
+
 def api_search_genres_movies(g_id, g_page):
     genres=tmdb.Genres(g_id)
     response=genres.movies(page=g_page)
