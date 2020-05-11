@@ -56,6 +56,11 @@
                   <h5 class="card-title">{{pelicula["original_title"]}}</h5>
                   <p class="card-text"style = "margin-top: 20%;">Release Date: {{pelicula["release_date"]}}</p>
                   <p class="card-text">Vote Average: {{pelicula["vote_average"]}}</p>
+                  <div class="row">
+                    {% for g in pelicula["genres_names"]%}
+                    <div class="col-sm bg-primary text-center" style="margin-left: 2%; margin-top:1px">{{g["name"]}}</div>
+                    {% endfor%}
+                  </div>
                 </div>
               </div>
             </div>
