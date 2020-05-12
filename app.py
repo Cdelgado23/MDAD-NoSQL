@@ -16,6 +16,55 @@ neouser="neo4j"
 
 app = Flask(__name__)
 graph=None
+
+@app.route('/recomend/<id>/complete')
+def recomendation_complete(id):
+    return Recomendation(id, True)
+
+@app.route('/recomend/<id>')
+def Recomendation(id, force_api_search=False):
+    print(id)
+    query = "MATCH (g:genre)<-[:belongs_to]-(m:movie) WHERE m.id=%s RETURN g" %id
+    genres = graph.run(query).data()
+    print(query)
+    print(genres)
+    localResults=[]    
+    local=True
+    if (not force_api_search):
+        if (len(genres)>1):
+            for x in range(len(genres)):
+                for y in range(x+1, len(genres)):
+                    query= "match(m:movie)-[:belongs_to]->(g:genre) match (m:movie)-[:belongs_to]->(c:genre) where g.id = %s and c.id = %s return m" %(genres[x]["g"]["id"], genres[y]["g"]["id"])
+                    Recomendation = graph.run(query).data()
+                    for m in Recomendation:
+                        print("%s - %s" %(str(id), m["m"]["id"]))
+                        print( int(id) - int(m["m"]["id"]))
+                        if (not int(m["m"]["id"]) == int(id)):
+                            localResults.append(m["m"])
+        elif(len(genres)==1):
+            query= "match(m:movie)-[:belongs_to]->(g:genre) where g.id = %s return m" %(genres[0]["g"]["id"])
+            Recomendation = graph.run(query).data()
+            for m in Recomendation:
+                print("%s - %s" %(str(id), m["m"]["id"]))
+                print( int(id) - int(m["m"]["id"]))
+                if (not int(m["m"]["id"]) == int(id)):
+                    localResults.append(m["m"])        
+
+    if(len(localResults)==0):
+        local=False
+        #API search
+        for r in api_search_recomendations(id):
+            localResults.append(r)
+
+    matcher=NodeMatcher(graph)
+    movie=matcher.match("movie").where("_.id="+id).first()
+    movie["genres_names"]=[]
+    for g in genres:
+        movie["genres_names"].append(g["g"])
+    
+    return render_template('RecomendationPage.html',pelicula= movie, recomendation=localResults,len =len(localResults), localSearch=local, searchType="recomend")
+    
+
 #detail of a director
 @app.route('/<searchType>/director/<id>')
 def director_details(searchType, id):
@@ -89,6 +138,10 @@ def actor_details(searchType, id):
 #detalied movie and actors and directos load
 @app.route('/<searchType>/details/<id>')
 def movie_details(searchType, id):
+    if (searchType=="recomend"):
+        url='/recomend/%s' %id
+        return redirect(url)
+
     actors=[]
     genres=[]
     matcher=NodeMatcher(graph)
@@ -156,6 +209,14 @@ def index():
     print(result)
     return render_template('SearchPage.html',peliculas=result,len = len(result), searchType="title")
     
+@app.route('/recomend', methods=['POST', 'GET'])
+def by_recomend_index():
+    if request.method == "POST":
+        return search_movie(request.form.get("user_input"), sType="recomend")
+    else:
+        result= get_10_movies()
+        return render_template('SearchPage.html',peliculas=result,len = len(result), searchType="recomend")
+
 
 @app.route('/title', methods=['POST', 'GET'])
 def by_title_index():
@@ -171,7 +232,7 @@ def search_movie_complete(movie_title):
     return search_movie(movie_title, True)
 
 @app.route('/title/<movie_title>')
-def search_movie(movie_title, force_api_search=False):
+def search_movie(movie_title, force_api_search=False, sType="title"):
     result=[]
     if (not force_api_search):
         LocalResult=True
@@ -187,7 +248,7 @@ def search_movie(movie_title, force_api_search=False):
         print("not in bd")
         result = api_search_movie(movie_title)["results"]
 
-    return render_template('SearchPage.html', peliculas=result, len = len(result), searchType="title", localResult=LocalResult, currentSearch=movie_title)
+    return render_template('SearchPage.html', peliculas=result, len = len(result), searchType=sType, localResult=LocalResult, currentSearch=movie_title)
 
 
 
@@ -277,6 +338,28 @@ def search_genres(genre_id, force_api_search=False):
                 result.append(movie)
         
     return render_template('GenreDetail.html', peliculas=result, len=len(result), searchType="genre", localResult=LocalResult, currentSearch=gen)
+
+
+def api_search_recomendations(m_id):
+    movie = tmdb.Movies(m_id)
+    response = movie.recommendations()
+    matcher =NodeMatcher(graph)
+    print(response)
+    for p in response["results"]:
+        if (p["poster_path"] == "None" or p["poster_path"] is None):
+            p["poster_path"]= "https://www.theprintworks.com/wp-content/themes/psBella/assets/img/film-poster-placeholder.png"
+        else:
+            p["poster_path"]= "https://image.tmdb.org/t/p/w220_and_h330_face" + p["poster_path"]  
+
+        movie=matcher.match("movie").where("_.id="+str(p["id"])).first()
+        if (movie is None):
+            movie=Node("movie", original_title=p["title"],id=p["id"], release_date=p["release_date"],poster_path=p["poster_path"], vote_count=p["vote_count"], vote_average=p["vote_average"], load=False)
+            graph.create(movie) 
+            for g in p["genre_ids"]:
+                genre=matcher.match("genre").where("_.id="+str(g)).first()
+                belongs_to=Relationship.type("belongs_to")
+                graph.create(belongs_to(movie, genre))
+    return response["results"]
 
 def api_search_genres_movies(g_id, g_page):
     genres=tmdb.Genres(g_id)

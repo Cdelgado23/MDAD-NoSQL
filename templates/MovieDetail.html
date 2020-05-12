@@ -9,49 +9,58 @@
         <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
     </head>
     <body>
-        <header>
-            <nav class="navbar navbar-expand-md navbar-dark bg-dark">
-              <a class="navbar-brand" href="#">MDAD</a>
-              <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-              </button>
-              <div class="collapse navbar-collapse" id="navbarCollapse">
-                <ul class="navbar-nav mr-auto">
-                  {% if searchType =="title"%}
-                  <li class="nav-item active">
-                  {% else %}
-                  <li class="nav-item">
-                  {% endif%}
-                    <a class="nav-link" href="/title">Search by title <span class="sr-only">(current)</span></a>
-                  </li>
-                  {% if searchType =="director"%}
-                  <li class="nav-item active">
-                  {% else %}
-                  <li class="nav-item">
-                  {% endif%}
-                    <a class="nav-link" href="/director">Search by director </a>
-                  </li>
-                  {% if searchType =="genre"%}
-                  <li class="nav-item active">
-                  {% else %}
-                  <li class="nav-item">
-                  {% endif%}
-                  <a class="nav-link" href="/genres">Search by genre </a>
-                </ul>
-                {%if searchType != "genre"%}
-                {% if searchType =="title"%}
-                <form class="form-inline mt-2 mt-md-0" action = "/title" method="POST">
-                {% endif%}
-                {% if searchType =="director"%}
-                <form class="form-inline mt-2 mt-md-0" action = "/director" method="POST">
-                {% endif%}
-                  <input class="form-control mr-sm-2" type="text" placeholder="Search" aria-label="Search" name="user_input">
-                  <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
-                </form>
-                {%endif%}
-              </div>
-            </nav>
-        </header>
+      <header>
+        <nav class="navbar navbar-expand-md navbar-dark bg-dark">
+          <a class="navbar-brand" href="#">MDAD</a>
+          <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav mr-auto">
+              {% if searchType =="title"%}
+              <li class="nav-item active">
+              {% else %}
+              <li class="nav-item">
+              {% endif%}
+                <a class="nav-link" href="/title">Search by title <span class="sr-only">(current)</span></a>
+              </li>
+              {% if searchType =="director"%}
+              <li class="nav-item active">
+              {% else %}
+              <li class="nav-item">
+              {% endif%}
+                <a class="nav-link" href="/director">Search by director </a>
+              </li>
+              {% if searchType =="genre"%}
+              <li class="nav-item active">
+              {% else %}
+              <li class="nav-item">
+              {% endif%}
+              <a class="nav-link" href="/genres">Search by genre </a>
+              {% if searchType =="recomend"%}
+              <li class="nav-item active">
+              {% else %}
+              <li class="nav-item">
+              {% endif%}
+              <a class="nav-link" href="/recomend">Search recomendations</a>
+            </ul>
+            {%if searchType != "genre"%}
+            {% if searchType =="title"%}
+            <form class="form-inline mt-2 mt-md-0" action = "/title" method="POST">
+            {% endif%}
+            {% if searchType =="director"%}
+            <form class="form-inline mt-2 mt-md-0" action = "/director" method="POST">
+            {% endif%}
+            {% if searchType =="recomend"%}
+            <form class="form-inline mt-2 mt-md-0" action = "/recomend" method="POST">
+            {% endif%}
+              <input class="form-control mr-sm-2" type="text" placeholder="Search" aria-label="Search" name="user_input">
+              <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+            </form>
+            {%endif%}
+          </div>
+        </nav>
+    </header>
         <main role="main">
 
           <div class="card mb-3 mx-auto" style="max-width: 540px; margin-top: 2%">

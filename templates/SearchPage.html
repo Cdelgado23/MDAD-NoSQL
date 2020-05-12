@@ -37,6 +37,12 @@
                   <li class="nav-item">
                   {% endif%}
                   <a class="nav-link" href="/genres">Search by genre </a>
+                  {% if searchType =="recomend"%}
+                  <li class="nav-item active">
+                  {% else %}
+                  <li class="nav-item">
+                  {% endif%}
+                  <a class="nav-link" href="/recomend">Search recomendations</a>
                 </ul>
                 {%if searchType != "genre"%}
                 {% if searchType =="title"%}
@@ -44,6 +50,9 @@
                 {% endif%}
                 {% if searchType =="director"%}
                 <form class="form-inline mt-2 mt-md-0" action = "/director" method="POST">
+                {% endif%}
+                {% if searchType =="recomend"%}
+                <form class="form-inline mt-2 mt-md-0" action = "/recomend" method="POST">
                 {% endif%}
                   <input class="form-control mr-sm-2" type="text" placeholder="Search" aria-label="Search" name="user_input">
                   <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
